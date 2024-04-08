@@ -1,47 +1,34 @@
 <template>
   <div class="min-h-screen bg-gray-100" style="background-image: url('tile.jpg');">
-    <div class="container py-6 sm:mx-auto">
+    <div class="container py-6 mx-auto">
       <div class="bg-white p-4 shadow rounded">
-        <div class=" bg-contain">
-          <div class="row align-items-center mb-5 shadow-lg py-5">
+        <div class="flex flex-col md:flex-row mb-5 shadow-lg py-5">
+          <!-- Surah selection dropdown -->
+          <div class="flex flex-1 md:w-1/3 items-center px-4 mb-4 md:mb-0">
+            <select @change="getSpecificSurah" class="quran-input text-center bg-gray-200 rounded-md py-2 px-4 w-full">
+              <option value="">Select Surah</option>
+              <option v-for="surah in surahs" :value="surah.number" :key="surah.number">
+                {{ surah.number }}. {{ surah.name }} - {{ surah.englishName }}
+              </option>
+            </select>
+          </div>
 
-              <!-- Surah selection dropdown -->
-            <div class="col-sm-3 px-4">
-              <select
-                @change="getSpecificSurah"
-                name=""
-                id=""
-                class="quran-input text-center bg-gray-200 rounded-md py-2 px-4 w-full"
-              >
-                <option value="">Select Surah</option>
-                <option v-for="surah in surahs" :value="surah.number" :key="surah.number">
-                  {{ surah.number }}. {{ surah.name }} - {{ surah.englishName }}
-                </option>
-              </select>
-            </div>
+          <!-- Surah information -->
+          <div class="flex-1 md:w-1/3 px-4 py-6">
+            <h3 class="font-bold text-lg mb-1 text-gray-800 text-center">
+              {{ currentSurah.number }}. {{ currentSurah.name }} - {{ currentSurah.englishName }}
+            </h3>
+            <p class="text-sm text-gray-600 text-center">
+              Total Ayahs: {{ currentSurah.numberOfAyahs }} - {{ currentSurah.englishNameTranslation }}
+            </p>
+          </div>
 
-
-            <!-- Surah information -->
-              <div class="col-sm-6 px-4 py-6">
-                <h3 class="font-bold text-lg mb-1 text-gray-800 text-center">
-                  {{ currentSurah.number }}. {{ currentSurah.name }} - {{ currentSurah.englishName }}
-                </h3>
-                <p class="text-sm text-gray-600 text-center">
-                  Total Ayahs: {{ currentSurah.numberOfAyahs }} - {{ currentSurah.englishNameTranslation }}
-                </p>
-              </div>
-
-
-              <!-- Loop toggle button -->
-              <div class="col-sm-3 px-4">
-                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                        :class="{ 'bg-yellow-500': isLooping }"
-                        @click="toggleLoop"
-                        style="width: 100%">
-                  {{ isLooping ? 'Disable Loop' : 'Enable Loop' }}
-                </button>
-              </div>
-            </div>
+          <!-- Loop toggle button -->
+          <div class="flex flex-1 md:w-1/3 px-4 items-center">
+            <button @click="toggleLoop" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full" :class="{ 'bg-yellow-500': isLooping }">
+              {{ isLooping ? 'Disable Loop' : 'Enable Loop' }}
+            </button>
+          </div>
         </div>
 
         <!-- Loading spinner -->
@@ -66,10 +53,10 @@
           
           <!-- Ayahs loop -->
           <div class="single-ayah rtl bg-gray-100 rounded-lg mb-5 divide-y divide-gray-300">
-            <div class="py-8 px-10" v-for="(ayah, index) in currentSurah.ayahs" :key="index" :class="{ 'bg-yellow-200': index === highlightedAyahIndex }">
-              <div class="shadow p-4 mb-4 flex justify-between items-center">
+            <div v-for="(ayah, index) in currentSurah.ayahs" :key="index" :class="{ 'bg-yellow-200': index === highlightedAyahIndex }">
+              <div class="shadow p-4 mb-4">
                 <!-- Play button -->
-                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-4 mr-4 px-4 rounded-full" @click="playAudio(currentSurahAudio.ayahs[index].audio, index)">
+                <button @click="playAudio(currentSurahAudio.ayahs[index].audio, index)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-2 rounded-full">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5V18M15 7.5V18M3 16.811V8.69c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 010 1.954l-7.108 4.061A1.125 1.125 0 013 16.811z"/>
                   </svg>
@@ -81,7 +68,7 @@
                     {{ currentSurahArabic.ayahs[index].text }}
                   </p>
                   <!-- Ayah text -->
-                  <p class="text-lg sm:text-xl bangla-text-nato text-gray-700 text-left mt-4">{{ ayah.text }}</p>
+                  <p class="text-sm sm:text-xl bangla-text-nato text-gray-700 text-left mt-4">{{ ayah.text }}</p>
                   <!-- English translation -->
                   <p class="text-sm sm:text-base text-gray-500 mt-2 text-left">{{ currentSurahTranslations[index] }}</p>
                 </div>
@@ -204,5 +191,7 @@ export default {
 </script>
 
 <style>
-
+.container{
+  max-width: 800px;
+}
 </style>
