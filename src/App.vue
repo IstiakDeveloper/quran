@@ -116,13 +116,40 @@ export default {
     playAudio(audioUrl, index) {
   const audioPlayer = this.$refs.audioPlayer;
 
+  if (index === 0 && this.currentSurah.number !== 1) {
+    // Play the specified audio before playing the actual audio for ayah 1
+    audioPlayer.src = 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/1.mp3';
+    audioPlayer.play();
+
+    // Listen for the specified audio to finish playing
+    audioPlayer.onended = () => {
+      // Once the specified audio finishes, play the actual audio for ayah 1
+      this.highlightedAyahIndex = 0; // Highlight the first ayah
+      this.scrollToHighlightedAyah();
+      this.playActualAudio(audioUrl, index);
+
+      // Show custom controls when actual audio starts playing
+      this.showCustomControls = true;
+    };
+  } else {
+    // If it's not the first ayah or the first surah, or if it's the first surah,
+    // play the actual audio for the current ayah
+    this.playActualAudio(audioUrl, index);
+
+    // Show custom controls for other ayahs
+    this.showCustomControls = true;
+  }
+},
+
+
+
+playActualAudio(audioUrl, index) {
+  const audioPlayer = this.$refs.audioPlayer;
+
   // Play the audio of the current ayah
   audioPlayer.src = audioUrl;
   audioPlayer.play();
   this.highlightedAyahIndex = index;
-
-  // Show custom controls when audio is played
-  this.showCustomControls = true;
 
   // Scroll to the highlighted ayah
   this.scrollToHighlightedAyah();
@@ -140,15 +167,19 @@ export default {
       // If it's the last ayah and looping is disabled, proceed to the next surah
       const nextSurahNumber = this.currentSurah.number + 1;
       if (nextSurahNumber <= this.surahs.length) {
+        // Query the next surah
         this.querySpecificsurah(nextSurahNumber);
+        // Play the audio of the first ayah in the next surah
+        setTimeout(() => {
+          this.playAudio(this.currentSurahAudio.ayahs[0].audio, 0);
+        }, 500); // Delay the play to ensure the next surah data is fully loaded
       }
     }
   };
 },
 
 
-
-    querySpecificsurah(surahNumber) {
+querySpecificsurah(surahNumber) {
       this.loading = true;
       const banglaPromise = axios.get(`https://api.alquran.cloud/v1/surah/${surahNumber}/bn.bengali`);
       const audioPromise = axios.get(`https://api.alquran.cloud/v1/surah/${surahNumber}/ar.alafasy`);
@@ -163,6 +194,16 @@ export default {
           .then(response => {
             this.currentSurahArabic = response.data.data;
             this.loading = false;
+
+            // Reset the scroll position to the top
+            window.scrollTo(0, 0);
+
+            // Highlight the first ayah
+            this.highlightedAyahIndex = 0;
+
+            // Play the specified audio before ayah 1
+            const specifiedAudioUrl = 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/1.mp3';
+            this.playAudio(specifiedAudioUrl, -1); // -1 indicates playing before ayah 1
           })
           .catch(error => {
             console.log(error);
@@ -174,6 +215,8 @@ export default {
         this.loading = false;
       });
     },
+
+
 
     toggleLoop() {
       this.isLooping = !this.isLooping;
